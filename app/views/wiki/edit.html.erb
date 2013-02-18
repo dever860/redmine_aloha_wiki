@@ -55,12 +55,12 @@ Aloha.ready( function() {
 	$('#editor').aloha();
 
 	$('#save').click(function(){
-		payload = $("#editor").html();
-		a = payload("#aloha-flag");
-		if (a === nil) {
-			payload.append("<div visibility='hidden' id='aloha-flag'></div>");
+		payload = $("#editor");
+		a = jQuery("#aloha-flag", payload);
+		if (a.html() === null) {
+			payload.append("<div style='visibility: hidden; display: none;' id='aloha-flag'></div>");
 		}
-		$("#payload").attr("value", payload);
+		$("#payload").attr("value", payload.html());
 		$("#wiki_form").submit(); 
 	});
 });
