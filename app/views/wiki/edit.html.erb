@@ -22,7 +22,12 @@ Nikolay Gniteev (c) 2012 (godhart@gmail.com)
   <% if @text =~ /\baloha-flag\b/%>
     <%= @text.html_safe %>
   <% else %>
-	  <%= textilizable @text, :html_safe %>
+	  <%= out = textilizable(@text) %>
+	  <% if out.nil? %>
+	  	ERROR
+	  <% else %>
+		<%= out.html_safe() %>
+	  <% end %>
   <% end %>
 <% end %>
 </div>
