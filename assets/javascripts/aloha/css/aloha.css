@@ -1,3 +1,10 @@
+#editor {
+	width: 80%;
+	height: 40em;
+	border: 1px solid #EBECE4;
+	overflow-y: scroll;
+	background-color: white;
+}
 .aloha-floatingmenu table, .aloha-floatingmenu tr, .aloha-floatingmenu td,
 .ext-root table, .ext-root tr, .ext-root td,
 table.x-layer, .x-layer tr, .x-layer td,
