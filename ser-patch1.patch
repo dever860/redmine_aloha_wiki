@@ -1,0 +1,247 @@
+From 6349f779481d595e6658a1e9e3cbc3b9bc126f05 Mon Sep 17 00:00:00 2001
+From: Sean Russell <ser@ser1.net>
+Date: Sun, 17 Feb 2013 22:09:32 -0500
+Subject: [PATCH][BUILD] Aloha works with Redmine 2.0.  It does not preserve
+ textile; it converts textile to HTML if it's not
+ already HTML. Pages in HTML are displayed in HTML.
+
+
+Signed-off-by: Sean Russell <ser@ser1.net>
+---
+ app/views/wiki/edit.html.erb               |  108 +++++++++-------------------
+ assets/javascripts/aloha/css/aloha.css     |    7 ++
+ assets/javascripts/aloha/lib/aloha.js      |    4 +-
+ assets/javascripts/aloha/lib/aloha/core.js |    2 +-
+ init.rb                                    |    2 +-
+ 5 files changed, 43 insertions(+), 80 deletions(-)
+
+diff --git a/app/views/wiki/edit.html.erb b/app/views/wiki/edit.html.erb
+index fa86b71..25955d1 100644
+--- a/app/views/wiki/edit.html.erb
++++ b/app/views/wiki/edit.html.erb
+@@ -1,50 +1,34 @@
+ <!-- 
+ Nikolay Gniteev (c) 2012 (godhart@gmail.com)
+-
+-Requires REDMINE_CONV_HTMLTOTEXTILE plugin (...)
+ -->
+ 
+ <%= wiki_page_breadcrumb(@page) %>
+ 
+ <h2><%= h @page.pretty_title %></h2>
+ 
+-<% form_for :content, @content,
++<%= form_for @content, :as => :content,
+             :url => {:action => 'update', :id => @page.title},
+             :html => {:method => :put, :multipart => true, :id => 'wiki_form'} do |f| %>
+ <%= f.hidden_field :version %>
++<input id='payload' name='content[text]' type='hidden' value=''></input>
+ <% if @section %>
+ <%= hidden_field_tag 'section', @section %>
+ <%= hidden_field_tag 'section_hash', @section_hash %>
+ <% end %>
+ <%= error_messages_for 'content' %>
+ 
+-<div id="textiletowysiwyg">
+-   <%= link_to_remote l( :label_wysiwyg_editor),
+-                       { :url => { :controller => 'wiki', :action => 'preview', :project_id => @project, :id => @page.title, :cleanview => 1 },
+-                         :method => :post,
+-                         :update => 'editor',
+-                         :with => "Form.serialize('wiki_form')",
+-                         :success => "toggleEditor('wysiwyg')"
+-                       }, :id => "textiletowysiwyg_link" %>
+-</div>
+-<div id="wysiwygtotextile">
+-   <%= link_to_remote l( :label_textile_editor),
+-                       { :url => { :controller => 'convert', :action => 'htmltotextile', :project_id => @project, :id => @page.title },
+-                         :method => :post,
+-                         :update => 'content_text',
+-                         :with => 'htmltotextile_request(document.getElementById("editor").innerHTML)',
+-                         :success => "toggleEditor('textile')"
+-                       }, :id => "wysiwygtotextile_link" %>
++<div id="editor" class="wiki" contenteditable="true" spellcheck="true">
++<% if !@text.nil? %>
++  <% if @text =~ /\baloha-flag\b/%>
++    <%= @text.html_safe %>
++  <% else %>
++    <%= Redmine::WikiFormatting.to_html(Setting.text_formatting, @text).html_safe %>
++  <% end %>
++<% end %>
+ </div>
+ 
+-<div id="save"><%= submit_tag l(:button_save) %></div>
+-
+-<div id="editor" class="wiki" contenteditable="true" spellcheck="true"></div>
+ 
+ <div class="box tabular">
+-<div id="textilebox">
+-<%= text_area_tag 'content[text]', @text, :cols => 100, :rows => 25, :class => 'wiki-edit', :accesskey => accesskey(:edit) %>
+-</div>
+ 
+ <% if @page.safe_attribute_names.include?('parent_id') && @wiki.pages.any? %>
+   <% fields_for @page do |fp| %>
+@@ -58,34 +42,27 @@ Requires REDMINE_CONV_HTMLTOTEXTILE plugin (...)
+ <p><label><%= l(:field_comments) %></label><%= f.text_field :comments, :size => 120 %></p>
+ <p><label><%=l(:label_attachment_plural)%></label><%= render :partial => 'attachments/form' %></p>
+ </div>
+-<%= wikitoolbar_for 'content_text' %>
+ <% end %>
+ 
+-<div id="showpreview">
+-   <%= link_to_remote l( :label_preview),
+-                       { :url => { :controller => 'wiki', :action => 'preview', :project_id => @project, :id => @page.title },
+-                         :method => :post,
+-                         :update => 'preview',
+-                         :with => "Form.serialize('wiki_form')",
+-                         :complete => "Element.scrollTo('preview')"
+-                       }, :accesskey => accesskey(:preview), :id => "showpreview_link" %>
+-</div>
++<button id="save">Save</button>
+ 
+-<div id="preview" class="wiki">
+-</div>
+ 
+ <!-- Scripts Goes Here -->
+ 
+ <script type="text/javascript">
+-  //Initialy hide WYSIWYG section and link to textile editor
+-  toggleHidden('editor', true);
+-  toggleHidden('wysiwygtotextile', true);
+-  //align('textiletowysiwyg','wysiwygtotextile'); //TODO: function is not working yet so it's commented just for case if it makes fuss I can't see (see below function definition for details)
+-</script>
+-
+-<script type="text/javascript">
+ Aloha.ready( function() {
+-    Aloha.jQuery('#editor').aloha();
++	var $ = Aloha.jQuery;
++	$('#editor').aloha();
++
++	$('#save').click(function(){
++		payload = $("#editor").html();
++		a = payload("#aloha-flag");
++		if (a === nil) {
++			payload.append("<div visibility='hidden' id='aloha-flag'></div>");
++		}
++		$("#payload").attr("value", payload);
++		$("#wiki_form").submit();
++	});
+ });
+ </script>
+ 
+@@ -94,7 +71,15 @@ Aloha.ready( function() {
+   <%= robot_exclusion_tag %>
+ 
+   <%= stylesheet_link_tag('../javascripts/aloha/css/aloha.css', :plugin => 'redmine_aloha_wiki') %>
+-  <%= javascript_include_tag('/aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="common/format,common/list,common/image,common/link">') %>
++  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="custom1/format,custom1/list,custom1/image,custom1/link">').html_safe %>
++
++<script type="text/javascript">
++Aloha.settings = {
++	bundles: {
++		custom1: '/plugin_assets/redmine_aloha_wiki/javascripts/aloha/plugins/common'
++    }
++};
++</script>
+ 
+ <script type="text/javascript">
+   var saved_sizes={};
+@@ -133,35 +118,6 @@ Aloha.ready( function() {
+     var el = document.getElementById(element);
+     el.innerHTML = ""
+   }
+-
+-  function toggleEditor(type) {
+-    if (type=='textile') {
+-      toggleHidden('wysiwygtotextile', true);
+-      toggleHidden('editor',true);
+-      clean('editor');
+-      toggleHidden('preview',false);
+-      toggleHidden('showpreview',false);
+-      toggleHiddenSize('textilebox',false);
+-      toggleHidden('textiletowysiwyg',false);
+-      Element.scrollTo('textilebox');
+-      $('wiki_form').reset();
+-    }
+-    else {
+-      toggleHidden('textiletowysiwyg', true);
+-      toggleHiddenSize('textilebox',true);
+-      clean('preview');
+-      toggleHidden('preview',true);
+-      toggleHidden('showpreview',true);
+-      toggleHidden('editor',false);
+-      toggleHidden('wysiwygtotextile',false);
+-      Element.scrollTo('editor');
+-    }
+-    return 0;
+-  }
+-
+-  function htmltotextile_request(text) {
+-    return 'content%5Btext%5D='+encodeURIComponent(text);
+-  }
+ </script>
+ 
+ <% end %>
+diff --git a/assets/javascripts/aloha/css/aloha.css b/assets/javascripts/aloha/css/aloha.css
+index cfdba2b..8541761 100644
+--- a/assets/javascripts/aloha/css/aloha.css
++++ b/assets/javascripts/aloha/css/aloha.css
+@@ -1,3 +1,10 @@
++#editor {
++	width: 80%;
++	height: 40em;
++	border: 1px solid #EBECE4;
++	overflow-y: scroll;
++	background-color: white;
++}
+ .aloha-floatingmenu table, .aloha-floatingmenu tr, .aloha-floatingmenu td,
+ .ext-root table, .ext-root tr, .ext-root td,
+ table.x-layer, .x-layer tr, .x-layer td,
+diff --git a/assets/javascripts/aloha/lib/aloha.js b/assets/javascripts/aloha/lib/aloha.js
+index b308436..82d9772 100644
+--- a/assets/javascripts/aloha/lib/aloha.js
++++ b/assets/javascripts/aloha/lib/aloha.js
+@@ -68241,7 +68241,7 @@ function ( jQuery, PluginManager ) {
+ 		getAlohaUrl: function( suffix ) {
+ 			// aloha base path is defined by a script tag with 2 data attributes
+ 			var requireJs = jQuery('[data-aloha-plugins]'),
+-				baseUrl = ( requireJs.length ) ? requireJs[0].src.replace( /\/?aloha.js$/ , '' ) : '';
++				baseUrl = ( requireJs.length ) ? requireJs[0].src.replace( /\/?aloha.js(\?.*)?$/ , '' ) : '';
+ 			
+ 			if ( typeof Aloha.settings.baseUrl === "string" ) {
+ 				baseUrl = Aloha.settings.baseUrl;
+@@ -89309,7 +89309,7 @@ function( Aloha, Class ) {
+ 		    script,
+ 		    scripts = document.getElementsByTagName( 'script' ),
+ 		    i, j = scripts.length,
+-		    regexAlohaJs = /\/aloha.js$/,
++		    regexAlohaJs = /\/aloha.js(\?.*)?$/,
+ 		    regexJs = /[^\/]*\.js$/;
+ 		
+ 		for ( i = 0; i < j && ( script = scripts[ i ] ); ++i ) {
+diff --git a/assets/javascripts/aloha/lib/aloha/core.js b/assets/javascripts/aloha/lib/aloha/core.js
+index 9e844a4..f092e57 100644
+--- a/assets/javascripts/aloha/lib/aloha/core.js
++++ b/assets/javascripts/aloha/lib/aloha/core.js
+@@ -577,4 +577,4 @@ function ( jQuery, PluginManager ) {
+ 	});
+ 
+ 	return Aloha;
+-});
+\ No newline at end of file
++});
+diff --git a/init.rb b/init.rb
+index c93505d..becc04a 100644
+--- a/init.rb
++++ b/init.rb
+@@ -3,7 +3,7 @@ require 'redmine'
+ Redmine::Plugin.register :redmine_aloha_wiki do
+   name 'Redmine Aloha WYSIWYG Wiki plugin'
+   author 'Nikolay Gniteev (godhart@gmail.com)'
+-  description 'Adds WYSIWYG to Wiki Editor. Requires REDMINE_CONV_HTMLTOTEXTILE plugin (https://github.com/Godhart/redmine_conv_htmltotextile)'
++  description 'Adds WYSIWYG to Wiki Editor.'
+   version '0.2.1'
+   url 'https://github.com/Godhart/redmine_aloha_wiki'
+   author_url 'http://'
+-- 
+1.7.10.4
+
