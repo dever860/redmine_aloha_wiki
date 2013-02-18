@@ -1,0 +1,42 @@
+From 5478b38d14dff47471bb97152c8091ae74772820 Mon Sep 17 00:00:00 2001
+From: Sean Russell <ser@ser1.net>
+Date: Mon, 18 Feb 2013 09:13:55 -0500
+Subject: [PATCH][BUILD] Adds plugins, and a missing partial handler.
+
+
+Signed-off-by: Sean Russell <ser@ser1.net>
+---
+ app/views/wiki/_content.html.erb |    8 ++++++++
+ app/views/wiki/edit.html.erb     |    2 +-
+ 2 files changed, 9 insertions(+), 1 deletion(-)
+ create mode 100644 app/views/wiki/_content.html.erb
+
+diff --git a/app/views/wiki/_content.html.erb b/app/views/wiki/_content.html.erb
+new file mode 100644
+index 0000000..f642b3c
+--- /dev/null
++++ b/app/views/wiki/_content.html.erb
+@@ -0,0 +1,8 @@
++<div class="wiki wiki-page">
++  <% if content.text =~ /\baloha-flag\b/ %>
++		<%= content.text.html_safe %>
++	<% else %>
++		<%= textilizable content, :text, :attachments => content.page.attachments,
++					:edit_section_links => (@sections_editable && {:controller => 'wiki', :action => 'edit', :project_id => @page.project, :id => @page.title}) %>
++	<% end %>
++</div>
+diff --git a/app/views/wiki/edit.html.erb b/app/views/wiki/edit.html.erb
+index 7a68121..c32ed78 100644
+--- a/app/views/wiki/edit.html.erb
++++ b/app/views/wiki/edit.html.erb
+@@ -71,7 +71,7 @@ Aloha.ready( function() {
+   <%= robot_exclusion_tag %>
+ 
+   <%= stylesheet_link_tag('../javascripts/aloha/css/aloha.css', :plugin => 'redmine_aloha_wiki') %>
+-  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="custom1/format,custom1/list,custom1/image,custom1/link">').html_safe %>
++  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="common/format,common/table,common/undo,common/contenthandler,common/paste,common/list,common/image,common/link">').html_safe %>
+ 
+ <script type="text/javascript">
+ Aloha.settings = {
+-- 
+1.7.10.4

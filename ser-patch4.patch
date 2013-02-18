@@ -1,0 +1,39 @@
+From 11f03cef443a9676e15371b6e0695cde056c35a1 Mon Sep 17 00:00:00 2001
+From: Sean Russell <ser@ser1.net>
+Date: Mon, 18 Feb 2013 09:38:32 -0500
+Subject: [PATCH][BUILD] Use textilizable() for the HTML conversion; expands
+ links.
+
+
+Signed-off-by: Sean Russell <ser@ser1.net>
+---
+ app/views/wiki/edit.html.erb |    5 +----
+ 1 file changed, 1 insertion(+), 4 deletions(-)
+
+diff --git a/app/views/wiki/edit.html.erb b/app/views/wiki/edit.html.erb
+index c32ed78..2bd5e2a 100644
+--- a/app/views/wiki/edit.html.erb
++++ b/app/views/wiki/edit.html.erb
+@@ -22,7 +22,7 @@ Nikolay Gniteev (c) 2012 (godhart@gmail.com)
+   <% if @text =~ /\baloha-flag\b/%>
+     <%= @text.html_safe %>
+   <% else %>
+-    <%= Redmine::WikiFormatting.to_html(Setting.text_formatting, @text).html_safe %>
++	  <%= textilizable @text, :html_safe %>
+   <% end %>
+ <% end %>
+ </div>
+@@ -75,9 +75,6 @@ Aloha.ready( function() {
+ 
+ <script type="text/javascript">
+ Aloha.settings = {
+-	bundles: {
+-		custom1: '/plugin_assets/redmine_aloha_wiki/javascripts/aloha/plugins/common'
+-    }
+ };
+ </script>
+ 
+-- 
+1.7.10.4
+
+
