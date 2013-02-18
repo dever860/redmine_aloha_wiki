@@ -1,0 +1,8 @@
+<div class="wiki wiki-page">
+  <% if content.text =~ /\baloha-flag\b/ %>
+		<%= content.text.html_safe %>
+	<% else %>
+		<%= textilizable content, :text, :attachments => content.page.attachments,
+					:edit_section_links => (@sections_editable && {:controller => 'wiki', :action => 'edit', :project_id => @page.project, :id => @page.title}) %>
+	<% end %>
+</div>
