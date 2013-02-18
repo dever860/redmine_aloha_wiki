@@ -68241,7 +68241,7 @@ function ( jQuery, PluginManager ) {
 		getAlohaUrl: function( suffix ) {
 			// aloha base path is defined by a script tag with 2 data attributes
 			var requireJs = jQuery('[data-aloha-plugins]'),
-				baseUrl = ( requireJs.length ) ? requireJs[0].src.replace( /\/?aloha.js$/ , '' ) : '';
+				baseUrl = ( requireJs.length ) ? requireJs[0].src.replace( /\/?aloha.js(\?.*)?$/ , '' ) : '';
 			
 			if ( typeof Aloha.settings.baseUrl === "string" ) {
 				baseUrl = Aloha.settings.baseUrl;
@@ -89309,7 +89309,7 @@ function( Aloha, Class ) {
 		    script,
 		    scripts = document.getElementsByTagName( 'script' ),
 		    i, j = scripts.length,
-		    regexAlohaJs = /\/aloha.js$/,
+		    regexAlohaJs = /\/aloha.js(\?.*)?$/,
 		    regexJs = /[^\/]*\.js$/;
 		
 		for ( i = 0; i < j && ( script = scripts[ i ] ); ++i ) {
