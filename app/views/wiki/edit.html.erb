@@ -71,7 +71,7 @@ Aloha.ready( function() {
   <%= robot_exclusion_tag %>
 
   <%= stylesheet_link_tag('../javascripts/aloha/css/aloha.css', :plugin => 'redmine_aloha_wiki') %>
-  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="custom1/format,custom1/list,custom1/image,custom1/link">').html_safe %>
+  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="common/format,common/table,common/undo,common/contenthandler,common/paste,common/list,common/image,common/link">').html_safe %>
 
 <script type="text/javascript">
 Aloha.settings = {
