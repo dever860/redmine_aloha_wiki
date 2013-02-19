@@ -1,0 +1,7 @@
+#editor {
+       width: 80%;
+       height: 40em;
+       border: 1px solid #EBECE4;
+       overflow-y: scroll;
+       background-color: white;
+}

@@ -49,39 +49,18 @@ Nikolay Gniteev (c) 2012 (godhart@gmail.com)
 
 <!-- Scripts Goes Here -->
 
-<script type="text/javascript">
-Aloha.ready( function() {
-	var $ = Aloha.jQuery;
-	$('#editor').aloha();
-
-	$('#save').click(function(){
-		payload = $("#editor");
-		a = jQuery("#aloha-flag", payload);
-		if (a.html() === null) {
-			payload.append("<div style='visibility: hidden; display: none;' id='aloha-flag'></div>");
-		}
-		$("#payload").attr("value", payload.html());
-		$("#wiki_form").submit(); 
-	});
-});
-</script>
-
 <% content_for :header_tags do %>
   <%= stylesheet_link_tag 'scm' %>
   <%= robot_exclusion_tag %>
 
   <%= stylesheet_link_tag('../javascripts/aloha/css/aloha.css', :plugin => 'redmine_aloha_wiki') %>
-  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki').sub('>', ' data-aloha-plugins="common/format,common/table,common/undo,common/contenthandler,common/paste,common/list,common/image,common/link">').html_safe %>
+  <%= stylesheet_link_tag('aloha-wiki.css', :plugin => 'redmine_aloha_wiki') %>
+  <%= javascript_include_tag('aloha/lib/require', :plugin => 'redmine_aloha_wiki')  %>
+  <%= javascript_include_tag('aloha/lib/vendor/jquery-1.7.2.js', :plugin => 'redmine_aloha_wiki')  %>
+  <%= javascript_include_tag('aloha-config', :plugin => 'redmine_aloha_wiki')  %>
+  <%= javascript_include_tag('aloha/lib/aloha.js', :plugin => 'redmine_aloha_wiki') %>
+  <%= javascript_include_tag('aloha-wiki', :plugin => 'redmine_aloha_wiki')  %>
 
-<script type="text/javascript">
-Aloha.settings = {
-	floatingmenu: {
-		behaviour: 'append', // attach FM to the position of a HTML element
-		element: 'editor', // HTML DOM ID of the element
-		pin: true, // boolean if set to true the FM will be pinned (and scroll with the window)
-	}
-};
-</script>
 
 <script type="text/javascript">
   var saved_sizes={};
@@ -121,6 +100,7 @@ Aloha.settings = {
     el.innerHTML = ""
   }
 </script>
+
 
 <% end %>
 
